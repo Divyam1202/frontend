@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";  // Import axios
+import axios from "axios"; // Import axios
 import { useRouter } from "next/navigation"; // Import useRouter
 import { useTheme } from "@/app/providers/theme-providers";
 import { getUser, logout, hasRole } from "@/app/utils/auth";
@@ -51,7 +51,7 @@ export default function EnrollCoursePage() {
             },
           }
         );
-        
+
         if (response.data.success) {
           setCourses(response.data.courses);
         } else {
@@ -71,26 +71,31 @@ export default function EnrollCoursePage() {
     setSuccessMessage(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/courses/enroll`, {
-        
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ courseId }),
-        
-        
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/courses/enroll`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ courseId }),
+        }
+      );
       console.log(courseId);
       const data = await response.json();
 
       if (data.success) {
         setSuccessMessage("Successfully enrolled in the course!");
-        setEnrolledCourses([...enrolledCourses, courses.find(course => course._id === courseId)!]);
-        setCourses(courses.map(course => 
-          course._id === courseId ? { ...course, isEnrolled: true } : course
-        ));
+        setEnrolledCourses([
+          ...enrolledCourses,
+          courses.find((course) => course._id === courseId)!,
+        ]);
+        setCourses(
+          courses.map((course) =>
+            course._id === courseId ? { ...course, isEnrolled: true } : course
+          )
+        );
       } else {
         setErrorMessage(data.message || "Error enrolling in course");
       }
@@ -181,8 +186,12 @@ export default function EnrollCoursePage() {
                   : "border-gray-200 dark:border-gray-700"
               }`}
             >
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{course.title}</h2>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{course.description}</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                {course.title}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                {course.description}
+              </p>
               <p className="text-sm text-gray-500 dark:text-gray-500">
                 <strong>Course Code:</strong> {course.courseCode}
               </p>
@@ -199,7 +208,11 @@ export default function EnrollCoursePage() {
                 onClick={() => handleEnroll(course._id)}
                 disabled={isSubmitting || course.isEnrolled}
               >
-                {isSubmitting ? "Enrolling..." : course.isEnrolled ? "Enrolled" : "Enroll"}
+                {isSubmitting
+                  ? "Enrolling..."
+                  : course.isEnrolled
+                  ? "Enrolled"
+                  : "Enroll"}
               </button>
             </div>
           ))}
@@ -208,12 +221,21 @@ export default function EnrollCoursePage() {
         {/* Displaying the list of enrolled courses */}
         {enrolledCourses.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Enrolled Courses</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Your Enrolled Courses
+            </h2>
             <ul className="space-y-4">
               {enrolledCourses.map((course) => (
-                <li key={course._id} className="p-4 border rounded-lg shadow-lg">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{course.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{course.description}</p>
+                <li
+                  key={course._id}
+                  className="p-4 border rounded-lg shadow-lg"
+                >
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {course.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                    {course.description}
+                  </p>
                   <p className="text-sm text-gray-500 dark:text-gray-500">
                     <strong>Course Code:</strong> {course.courseCode}
                   </p>

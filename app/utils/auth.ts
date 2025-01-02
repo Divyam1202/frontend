@@ -94,8 +94,8 @@ export const logout = () => {
   // Define custom logout redirects based on user roles
   const roleRedirectMap: Record<string, string> = {
     admin: "/admin/logout", // Custom admin logout page
-    instructor: "/instructor", // Instructor-specific home or login
-    student: "/student", // Student-specific home or login
+    instructor: "/login", // Instructor-specific home or login
+    student: "/login", // Student-specific home or login
     portfolio: "/portfolio", // Custom portfolio page
   };
 

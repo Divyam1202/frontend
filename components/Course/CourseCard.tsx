@@ -1,6 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Users } from "lucide-react";
 import Image from "next/image";
@@ -15,6 +20,7 @@ interface CourseCardProps {
   enrolled: number;
   image: string;
   price: number;
+  isEnrolled: boolean; // Add this prop to determine if the course is enrolled
 }
 
 export default function CourseCard({
@@ -26,9 +32,16 @@ export default function CourseCard({
   enrolled,
   image,
   price,
+  isEnrolled, // Destructure the isEnrolled prop
 }: CourseCardProps) {
   return (
-    <Card className="overflow-hidden">
+    <Card
+      className={`overflow-hidden ${
+        isEnrolled
+          ? "border-green-500 bg-green-50 dark:bg-green-800/20"
+          : "border-gray-200 dark:border-gray-700"
+      }`} // Conditionally apply green border and background
+    >
       <div className="aspect-video relative">
         <Image
           src={image}
@@ -45,7 +58,9 @@ export default function CourseCard({
         </div>
       </CardHeader>
       <CardContent>
-        <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
+        <p className="line-clamp-2 text-sm text-muted-foreground">
+          {description}
+        </p>
         <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
@@ -58,9 +73,7 @@ export default function CourseCard({
         </div>
       </CardContent>
       <CardFooter className="flex items-center justify-between">
-        <span className="text-lg font-semibold">
-          ${price.toFixed(2)}
-        </span>
+        <span className="text-lg font-semibold">${price.toFixed(2)}</span>
         <Link href={`/courses/${id}`}>
           <Button>Learn More</Button>
         </Link>

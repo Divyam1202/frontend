@@ -106,12 +106,6 @@ export default function InstructorDashboard() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              {/* <button
-                onClick={() => setIsMenuModalOpen(true)}
-                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-              >
-                View Menu
-              </button> */}
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
@@ -355,7 +349,7 @@ export default function InstructorDashboard() {
           </button>
 
           <button
-            onClick={() => router.push("/instructor/attendance")}
+            onClick={() => router.push("/instructor/quiz")}
             className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 flex flex-col items-center text-center hover:scale-105"
           >
             <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-200">

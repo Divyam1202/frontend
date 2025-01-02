@@ -1,9 +1,9 @@
 // app/student/play/[courseId]/page.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 import { useTheme } from "@/app/providers/theme-providers";
 import { getUser, logout, hasRole } from "@/app/utils/auth";
 import { User } from "@/app/types/user";
@@ -20,7 +20,11 @@ interface Course {
   modules: Module[];
 }
 
-export default function PlayCourse({ params }: { params: { courseId: string } }) {
+export default function PlayCourse({
+  params,
+}: {
+  params: { courseId: string };
+}) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { courseId } = params;
@@ -38,14 +42,14 @@ export default function PlayCourse({ params }: { params: { courseId: string } })
 
     const fetchCourse = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/student/play/${courseId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/courses/play/${courseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -54,7 +58,7 @@ export default function PlayCourse({ params }: { params: { courseId: string } })
         );
 
         if (!response.data.course) {
-          throw new Error('Course not found');
+          throw new Error("Course not found");
         }
 
         setCourse(response.data.course);
@@ -62,7 +66,7 @@ export default function PlayCourse({ params }: { params: { courseId: string } })
           setCurrentModule(response.data.course.modules[0]);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load course');
+        setError(err instanceof Error ? err.message : "Failed to load course");
       } finally {
         setLoading(false);
       }
@@ -71,7 +75,7 @@ export default function PlayCourse({ params }: { params: { courseId: string } })
     if (courseId) {
       fetchCourse();
     } else {
-      setError('Course ID is missing');
+      setError("Course ID is missing");
       setLoading(false);
     }
   }, [courseId, router, user]);
@@ -173,18 +177,14 @@ export default function PlayCourse({ params }: { params: { courseId: string } })
       </nav>
 
       <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8">
-          <button 
-            onClick={() => router.back()}
-            className="mb-4 text-blue-600 hover:text-blue-800 flex items-center gap-2"
-          >
-            <span>←</span> Back to Courses
-          </button>
-        </div>
-
         <div className="flex flex-col md:flex-row gap-6">
           <div className="md:w-1/4">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-900">Modules</h2>
+            <h1 className="text-2xl font-sedatabase managementmibold mb-4 text-purple-600">
+              Title <span className="ml-2">{course.title}</span>
+            </h1>
+            <h2 className="text-2xl font-sedatabase managementmibold mb-4 text-purple-600">
+              Modules
+            </h2>
             <div className="space-y-2">
               {course.modules.map((module, index) => (
                 <button
@@ -192,8 +192,8 @@ export default function PlayCourse({ params }: { params: { courseId: string } })
                   onClick={() => handleModuleSelect(module)}
                   className={`w-full p-3 text-left rounded-lg transition-colors ${
                     currentModule?.title === module.title
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 hover:bg-gray-200'
+                      ? "bg-blue-600 text-white"
+                      : "bg-blue-400 hover:bg-purple-500"
                   }`}
                 >
                   {module.title}
@@ -203,15 +203,21 @@ export default function PlayCourse({ params }: { params: { courseId: string } })
           </div>
 
           <div className="md:w-3/4">
-            <h1 className="text-4xl font-bold mb-2 text-gray-900">{course.title}</h1>
-            <p className="text-gray-600 text-lg mb-4">{course.description}</p>
+            <p className="text-blue-500 text-lg mb-4">
+              Description: {course.description}
+            </p>
             {currentModule && (
               <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-2xl font-semibold mb-4 text-gray-900">{currentModule.title}</h3>
-                {currentModule.resourceLink.includes('youtube.com') ? (
+                <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+                  {currentModule.title}
+                </h3>
+                {currentModule.resourceLink.includes("youtube.com") ? (
                   <div className="aspect-w-16 aspect-h-9">
                     <iframe
-                      src={currentModule.resourceLink.replace('watch?v=', 'embed/')}
+                      src={currentModule.resourceLink.replace(
+                        "watch?v=",
+                        "embed/"
+                      )}
                       className="w-full h-[500px] rounded-lg"
                       allowFullScreen
                       sandbox="allow-same-origin allow-scripts allow-popups"

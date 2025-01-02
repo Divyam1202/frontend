@@ -1,8 +1,9 @@
+// app/student/course/[courseId]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
-import { useRouter } from "next/navigation"; // Changed from next/router
 import { useTheme } from "@/app/providers/theme-providers";
 import { getUser, logout, hasRole } from "@/app/utils/auth";
 import { User } from "@/app/types/user";
@@ -12,29 +13,18 @@ type Module = {
   resourceLink: string;
 };
 
-type ProgressEntry = {
-  student: string;
-  progress: number;
-  lastPlayedModule?: string | null;
-};
-
 type Course = {
-  _id: string;
   title: string;
   description: string;
   courseCode: string;
-  capacity: number;
-  instructor: string;
-  students: string[];
-  status: string;
   modules: Module[];
-  progress: number;
 };
 
-const EnrolledCoursesPage = () => {
-  const router = useRouter(); // Initialize router first
+const CourseDetailsPage = () => {
+  const router = useRouter();
+  const { courseId } = useParams();
   const { theme, toggleTheme } = useTheme();
-  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+  const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user] = useState<User | null>(getUser() as User | null);
@@ -45,7 +35,7 @@ const EnrolledCoursesPage = () => {
       return;
     }
 
-    const fetchEnrolledCourses = async () => {
+    const fetchCourseDetails = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -54,7 +44,7 @@ const EnrolledCoursesPage = () => {
         }
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/courses/mycourses`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/courses/${courseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -63,35 +53,22 @@ const EnrolledCoursesPage = () => {
         );
 
         if (response.data.success) {
-          const updatedCourses = response.data.courses.map((course: any) => ({
-            ...course,
-            progress:
-              course.progress.length > 0 ? course.progress[0].progress : 0, // Default progress to 0 if not provided
-          })) as Course[];
-          setEnrolledCourses(updatedCourses);
+          setCourse(response.data.course);
         } else {
-          setError(response.data.message || "Error fetching courses");
+          setError(response.data.message || "Error fetching course details");
         }
       } catch (error) {
-        setError("Failed to fetch courses");
+        setError("Failed to fetch course details");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchEnrolledCourses();
-  }, [router, user]);
+    fetchCourseDetails();
+  }, [router, user, courseId]);
 
-  const handlePlayCourse = (courseId: string) => {
-    router.push(`/student/play/${courseId}`);
-  };
-
-  // const handleViewMore = (courseId: string) => {
-  //   router.push(`/student/course/${courseId}`);
-  // };
-
-  const handleBackToDashboard = () => {
-    router.push("/student/dashboard");
+  const handleBackToCourses = () => {
+    router.push("/student/mycourses");
   };
 
   if (!user) return null;
@@ -127,10 +104,10 @@ const EnrolledCoursesPage = () => {
                 Logout
               </button>
               <button
-                onClick={handleBackToDashboard}
+                onClick={handleBackToCourses}
                 className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl transition-all duration-200"
               >
-                Back to Dashboard
+                Back to Courses
               </button>
             </div>
           </div>
@@ -138,17 +115,6 @@ const EnrolledCoursesPage = () => {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="bg-gradient-to-br from-purple-500 to-blue-600 dark:from-purple-600 dark:to-purple-700 rounded-2xl p-8 text-white">
-            <h2 className="text-3xl font-bold mb-2">
-              Your Enrolled Courses 🎬
-            </h2>
-            <p className="text-blue-100">
-              Here are your courses begin Happy Learning!
-            </p>
-          </div>
-        </div>
-
         {error && (
           <div className="bg-red-100 text-red-800 p-4 rounded mb-6">
             {error}
@@ -156,39 +122,34 @@ const EnrolledCoursesPage = () => {
         )}
 
         {isLoading ? (
-          <div className="text-center p-4">Loading your courses...</div>
-        ) : enrolledCourses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {enrolledCourses.map((course) => (
-              <div
-                key={course._id}
-                className="p-4 border rounded-lg shadow-lg bg-white dark:bg-gray-800"
-              >
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  {course.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                  {course.description}
-                </p>
-
-                <button
-                  onClick={() => handlePlayCourse(course._id)}
-                  className="mt-4 w-full px-4 py-2 bg-blue-600 hover:bg-orange-400 text-white font-semibold rounded-lg transition-colors duration-200"
+          <div className="text-center p-4">Loading course details...</div>
+        ) : course ? (
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              {course.description}
+            </p>
+            <h2 className="text-2xl font-semibold mb-2">Modules</h2>
+            <ul className="list-disc list-inside">
+              {course.modules.map((module) => (
+                <li
+                  key={module.title}
+                  className="text-gray-700 dark:text-gray-300"
                 >
-                  Play Course
-                </button>
-                {/* <button
-                  onClick={() => handleViewMore(course._id)}
-                  className="mt-2 w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200"
-                >
-                  View More
-                </button> */}
-              </div>
-            ))}
+                  <a
+                    href={module.resourceLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {module.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : (
           <div className="text-gray-500 dark:text-gray-400 text-center">
-            You are not enrolled in any courses.
+            Course not found.
           </div>
         )}
       </main>
@@ -196,4 +157,4 @@ const EnrolledCoursesPage = () => {
   );
 };
 
-export default EnrolledCoursesPage;
+export default CourseDetailsPage;
