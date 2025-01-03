@@ -1,7 +1,7 @@
 "use client";
 import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { useTheme } from "../providers/theme-provider";
+import { useTheme } from "@/app/providers/theme-providers";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -12,13 +12,14 @@ export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/password/forgot-password",
+        `${API_BASE_URL}/api/password/forgot-password`,
         {
           method: "POST",
           headers: {
@@ -63,7 +64,7 @@ export default function ForgotPassword() {
           {/* Logo & Header */}
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300 text-transparent bg-clip-text">
-              HMS
+              Learn X Port
             </h1>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Forgot Password
@@ -85,7 +86,7 @@ export default function ForgotPassword() {
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                   clipRule="evenodd"
                 />
               </svg>
