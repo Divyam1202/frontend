@@ -9,7 +9,7 @@ interface ComplaintType {
   _id: string;
   description: string;
   status: "Pending" | "Resolved";
-  type: "Enroll" | "Withdraw" |  "Completion" | "Other" | "All";
+  type: "Enroll" | "Withdraw" | "Completion" | "Other" | "All";
   instructorDetails: {
     firstName: string;
     lastName: string;
@@ -24,7 +24,7 @@ export default function ComplaintsPage() {
   const [loading, setLoading] = useState(true);
   const [user] = useState<User | null>(getUser() as User | null);
   const [sortBy, setSortBy] = useState<
-    "Enroll" | "Withdraw" |  "Completion" | "Other" | "All"
+    "Enroll" | "Withdraw" | "Completion" | "Other" | "All"
   >("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -55,7 +55,7 @@ export default function ComplaintsPage() {
         console.error("No token found. User might not be authenticated.");
         return;
       }
-  
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/instructor/complaints`,
         {
@@ -66,7 +66,7 @@ export default function ComplaintsPage() {
           },
         }
       );
-  
+
       // Check if the response is successful
       if (response.ok) {
         const data = await response.json();
@@ -97,8 +97,6 @@ export default function ComplaintsPage() {
       setLoading(false);
     }
   };
-  
-  
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -190,7 +188,6 @@ export default function ComplaintsPage() {
   //   }
   // };
 
-
   const getSortedComplaints = () => {
     if (sortBy === "All") return complaints;
     return complaints.filter((complaint) => complaint.type === sortBy);
@@ -201,20 +198,20 @@ export default function ComplaintsPage() {
     const today = new Date(now.setHours(0, 0, 0, 0));
     const weekAgo = new Date(now.setDate(now.getDate() - 7));
     const monthAgo = new Date(now.setMonth(now.getMonth() - 1));
-  
+
     return complaints.filter((complaint) => {
       const complaintDate = new Date(complaint.createdAt);
-  
+
       // Filter by type
       if (sortBy !== "All" && complaint.type !== sortBy) {
         return false;
       }
-  
+
       // Filter by status
       if (statusFilter !== "All" && complaint.status !== statusFilter) {
         return false;
       }
-  
+
       // Filter by date
       if (dateFilter !== "All") {
         if (
@@ -225,23 +222,26 @@ export default function ComplaintsPage() {
           return false;
         }
       }
-  
+
       // Filter by search term
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         if (
           !complaint.description.toLowerCase().includes(searchLower) &&
-          !complaint.instructorDetails?.firstName.toLowerCase().includes(searchLower) &&
-          !complaint.instructorDetails?.lastName.toLowerCase().includes(searchLower)
+          !complaint.instructorDetails?.firstName
+            .toLowerCase()
+            .includes(searchLower) &&
+          !complaint.instructorDetails?.lastName
+            .toLowerCase()
+            .includes(searchLower)
         ) {
           return false;
         }
       }
-  
+
       return true;
     });
   };
-  
 
   const filteredComplaints = getFilteredComplaints();
   const totalPages = Math.ceil(filteredComplaints.length / itemsPerPage);
@@ -305,7 +305,7 @@ export default function ComplaintsPage() {
                 Logout
               </button>
               <button
-                onClick={() => router.push('/instructor/dashboard')}
+                onClick={() => router.push("/instructor/dashboard")}
                 className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl transition-all duration-200"
               >
                 Back to Dashboard
@@ -343,26 +343,28 @@ export default function ComplaintsPage() {
           <div className="flex flex-wrap gap-4">
             {/* Type Filters */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="text-sm font-large text-gray-700 dark:text-gray-300">
                 Type
               </label>
               <div className="flex gap-2">
-                {["all", "Enroll", "Withdraw", "Completion", "Other", "All"].map((type) => (
-                  <FilterButton
-                    key={type}
-                    active={sortBy === type}
-                    onClick={() => setSortBy(type as typeof sortBy)}
-                  >
-                    <span className="flex items-center gap-2">
+                {["All", "Enroll", "Withdraw", "Completion", "Other"].map(
+                  (type) => (
+                    <FilterButton
+                      key={type}
+                      active={sortBy === type}
+                      onClick={() => setSortBy(type as typeof sortBy)}
+                    >
+                      <span className="flex items-center gap-2">
+                        {type === "All" && "👀"}
                         {type === "Enroll" && "📚"}
-                        {type === "Withdraw" && "🔻"}
+                        {type === "Withdraw" && "🔄"}
                         {type === "Completion" && "✅"}
                         {type === "Other" && "📝"}
-                        {type === "All" && "👀"}
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </span>
-                  </FilterButton>
-                ))}
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </span>
+                    </FilterButton>
+                  )
+                )}
               </div>
             </div>
 
@@ -460,12 +462,12 @@ export default function ComplaintsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         <span className="inline-flex items-center">
-                            {complaint.type === "Enroll" && "📚"}
-                            {complaint.type === "Withdraw" && "🔻"}
-                            {complaint.type === "Completion" && "✅"}
-                            {complaint.type === "Other" && "📝"}
-                            {complaint.type === "All" && "👀"}
-                            {complaint.type}
+                          {complaint.type === "Enroll" && "📚"}
+                          {complaint.type === "Withdraw" && "🔻"}
+                          {complaint.type === "Completion" && "✅"}
+                          {complaint.type === "Other" && "📝"}
+                          {complaint.type === "All" && "👀"}
+                          {complaint.type}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-md truncate">
