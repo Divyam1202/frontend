@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -56,7 +55,7 @@ const EditModal: React.FC<EditModalProps> = ({
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-2 border rounded-lg mb-4"
+          className="w-full p-2 text-gray-900 border rounded-lg mb-4"
         />
         <div className="flex justify-end gap-2">
           <button
@@ -92,6 +91,18 @@ export default function ComplaintsPage() {
   const [editComplaint, setEditComplaint] = useState<ComplaintType | null>(
     null
   );
+  const [sortBy, setSortBy] = useState<
+    "Enroll" | "Withdraw" | "Completion" | "Other" | "All"
+  >("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "All" | "Pending" | "Resolved"
+  >("All");
+  const [dateFilter, setDateFilter] = useState<
+    "All" | "today" | "week" | "month"
+  >("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!user || !hasRole(["student"])) {
@@ -108,7 +119,7 @@ export default function ComplaintsPage() {
         }
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/complaints/student`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/complaints/student/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -179,7 +190,7 @@ export default function ComplaintsPage() {
       }
 
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/complaints/student/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/complaints/student/update-complaint/${id}`,
         { description },
         {
           headers: {
@@ -238,6 +249,97 @@ export default function ComplaintsPage() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+      case "resolved":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+    }
+  };
+
+  const getFilteredComplaints = () => {
+    let filtered = [...complaints].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    if (sortBy !== "All") {
+      filtered = filtered.filter((complaint) => complaint.type === sortBy);
+    }
+
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(
+        (complaint) => complaint.status === statusFilter
+      );
+    }
+
+    if (dateFilter !== "All") {
+      const now = new Date();
+      const today = new Date(now.setHours(0, 0, 0, 0));
+      filtered = filtered.filter((complaint) => {
+        const complaintDate = new Date(complaint.createdAt);
+        switch (dateFilter) {
+          case "today":
+            return complaintDate >= today;
+          case "week":
+            const weekAgo = new Date(now.setDate(now.getDate() - 7));
+            return complaintDate >= weekAgo;
+          case "month":
+            const monthAgo = new Date(now.setMonth(now.getMonth() - 1));
+            return complaintDate >= monthAgo;
+          default:
+            return true;
+        }
+      });
+    }
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (complaint) =>
+          complaint.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          complaint.studentDetails?.firstName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered;
+  };
+
+  const filteredComplaints = getFilteredComplaints();
+  const totalPages = Math.ceil(filteredComplaints.length / itemsPerPage);
+  const paginatedComplaints = filteredComplaints.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const FilterButton = ({
+    active,
+    onClick,
+    children,
+  }: {
+    active: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+  }) => (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 
+        ${
+          active
+            ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        }`}
+    >
+      {children}
+    </button>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Navigation Bar */}
@@ -268,6 +370,12 @@ export default function ComplaintsPage() {
               >
                 Logout
               </button>
+              <button
+                onClick={() => router.push("/student/dashboard")}
+                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl transition-all duration-200"
+              >
+                Back to Dashboard
+              </button>
             </div>
           </div>
         </div>
@@ -278,7 +386,7 @@ export default function ComplaintsPage() {
           <div className="bg-gradient-to-br from-purple-500 to-blue-600 dark:from-purple-600 dark:to-purple-700 rounded-2xl p-8 text-white">
             <h2 className="text-3xl font-bold mb-2">Your Complaints</h2>
             <p className="text-blue-100">
-              Here you can view and manage your complaints.
+              Here you can raise and view your complaints.
             </p>
           </div>
         </div>
@@ -332,9 +440,97 @@ export default function ComplaintsPage() {
           </button>
         </div>
 
+        <div className="mb-6 space-y-4">
+          {/* Search */}
+          <div className="flex gap-4">
+            <input
+              type="text"
+              placeholder="Search complaints..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-4">
+            {/* Type Filters */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Type
+              </label>
+              <div className="flex gap-2">
+                {["All", "Enroll", "Withdraw", "Completion", "Other"].map(
+                  (type) => (
+                    <FilterButton
+                      key={type}
+                      active={sortBy === type}
+                      onClick={() => setSortBy(type as typeof sortBy)}
+                    >
+                      <span className="flex items-center gap-2">
+                        {type === "All" && "👀"}
+                        {type === "Enroll" && "📚"}
+                        {type === "Withdraw" && "🔄"}
+                        {type === "Completion" && "✅"}
+                        {type === "Other" && "📝"}
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </span>
+                    </FilterButton>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Status Filters */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Status
+              </label>
+              <div className="flex gap-2">
+                {["All", "Pending", "Resolved"].map((status) => (
+                  <FilterButton
+                    key={status}
+                    active={statusFilter === status}
+                    onClick={() =>
+                      setStatusFilter(status as typeof statusFilter)
+                    }
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </FilterButton>
+                ))}
+              </div>
+            </div>
+
+            {/* Date Filters */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Date
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { value: "all", label: "All Time" },
+                  { value: "today", label: "Today" },
+                  { value: "week", label: "This Week" },
+                  { value: "month", label: "This Month" },
+                ].map((option) => (
+                  <FilterButton
+                    key={option.value}
+                    active={dateFilter === option.value}
+                    onClick={() =>
+                      setDateFilter(option.value as typeof dateFilter)
+                    }
+                  >
+                    {option.label}
+                  </FilterButton>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div>
           <h3 className="text-xl font-semibold mb-4">Your Complaints</h3>
-          {complaints.length === 0 ? (
+          {paginatedComplaints.length === 0 ? (
             <p className="text-gray-500">No complaints found.</p>
           ) : (
             <ul className="space-y-4">
@@ -366,17 +562,42 @@ export default function ComplaintsPage() {
                   </p>
                   <div className="flex justify-end gap-2">
                     <button
-                      onClick={() => setEditComplaint(complaint)}
-                      className="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg"
+                      onClick={() =>
+                        complaint.status !== "Resolved" &&
+                        setEditComplaint(complaint)
+                      }
+                      className={`px-4 py-2 rounded-lg ${
+                        complaint.status === "Resolved"
+                          ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed"
+                          : "bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600"
+                      }`}
+                      disabled={complaint.status === "Resolved"}
+                      title={
+                        complaint.status === "Resolved"
+                          ? "Cannot edit a resolved complaint."
+                          : ""
+                      }
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDeleteComplaint(complaint._id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                      disabled={isLoading}
+                      onClick={() =>
+                        complaint.status !== "Resolved" &&
+                        handleDeleteComplaint(complaint._id)
+                      }
+                      className={`px-4 py-2 rounded-lg ${
+                        complaint.status === "Resolved"
+                          ? "bg-red-300 cursor-not-allowed"
+                          : "bg-red-500 text-white hover:bg-red-600"
+                      }`}
+                      disabled={complaint.status === "Resolved"}
+                      title={
+                        complaint.status === "Resolved"
+                          ? "Cannot delete a resolved complaint."
+                          : ""
+                      }
                     >
-                      {isLoading ? "Deleting..." : "Delete"}
+                      Delete
                     </button>
                   </div>
                 </li>

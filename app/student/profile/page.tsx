@@ -14,7 +14,15 @@ export default function StudentProfile() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [formData, setFormData] = useState({
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [formData, setFormData] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }>({
     firstName: "",
     lastName: "",
     email: "",
@@ -22,6 +30,13 @@ export default function StudentProfile() {
     newPassword: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user || !hasRole(["student"])) {
@@ -41,12 +56,11 @@ export default function StudentProfile() {
       ...prev,
       [e.target.name]: e.target.value,
     }));
-    // Clear messages when user starts typing
     setError("");
     setSuccess("");
   };
 
-  const handleProfileUpdate = async (e: React.FormEvent) => {
+  const handleProfileInfoUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -67,16 +81,18 @@ export default function StudentProfile() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update profile");
+        throw new Error("Failed to update profile information");
       }
 
       const updatedUser = await response.json();
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
-      setSuccess("Profile updated successfully!");
+      setSuccess("Profile information updated successfully!");
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to update profile"
+        error instanceof Error
+          ? error.message
+          : "Failed to update profile information"
       );
     } finally {
       setLoading(false);
@@ -130,16 +146,14 @@ export default function StudentProfile() {
       setLoading(false);
     }
   };
-
   const handleBackToDashboard = () => {
     router.push("/student/dashboard");
   };
-
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      {/* Navigation Bar */}
+      {/* Navigation */}
       <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -179,14 +193,6 @@ export default function StudentProfile() {
       </nav>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-2xl p-8 text-white">
-            <h2 className="text-3xl font-bold mb-2">My Profile 🧑‍🎓</h2>
-            <p className="text-blue-100">
-              Edit your information and keep it updated.
-            </p>
-          </div>
-        </div>
         {/* Success Message */}
         {success && (
           <div className="mb-6 bg-green-50 dark:bg-green-900/30 text-green-500 dark:text-green-400 p-4 rounded-xl text-sm flex items-center gap-2">
@@ -222,7 +228,7 @@ export default function StudentProfile() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Profile Information
               </h2>
-              <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -263,11 +269,11 @@ export default function StudentProfile() {
                 </div>
                 <div className="flex justify-end">
                   <button
-                    type="submit"
+                    onClick={handleProfileInfoUpdate}
                     disabled={loading}
-                    className="px-6 py-3 text-sm font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-green-400 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                    className="px-6 py-3 text-sm font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50"
                   >
-                    Update Profile
+                    Update Profile Information
                   </button>
                 </div>
               </form>
@@ -321,7 +327,7 @@ export default function StudentProfile() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-3 text-sm font-medium rounded-xl text-white bg-gradient-to-r from-green-400 to-blue-500 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                    className="px-6 py-3 text-sm font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                   >
                     Change Password
                   </button>
