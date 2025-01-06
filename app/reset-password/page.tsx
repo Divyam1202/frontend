@@ -32,7 +32,7 @@ export default function ResetPassword() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/password/reset-password",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/password/reset-password`,
         {
           method: "POST",
           headers: {
