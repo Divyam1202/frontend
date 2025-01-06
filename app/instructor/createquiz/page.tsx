@@ -18,6 +18,7 @@ export default function InstructorQuizPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState<string>(""); // New state for success message
 
   const handleAddQuestion = () => {
     setQuestions([
@@ -71,6 +72,7 @@ export default function InstructorQuizPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess(""); // Reset success message before new submission
 
     const payload = {
       title,
@@ -93,7 +95,11 @@ export default function InstructorQuizPage() {
         throw new Error("Failed to create quiz");
       }
 
-      router.push("/instructor/dashboard");
+      // Success: Set the success message and navigate
+      setSuccess("Quiz created successfully!");
+      setTimeout(() => {
+        router.push("/instructor/dashboard");
+      }, 1500); // Redirect after 1.5 seconds
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -105,34 +111,40 @@ export default function InstructorQuizPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
     const payload = new FormData();
     payload.append("title", title);
-    payload.append("description", description);
+    payload.append("description", description); // No need for JSON.stringify
     payload.append("dueDate", dueDate);
     if (file) {
       payload.append("file", file);
     }
+    payload.append("instructor", "instructor_id"); // Replace with actual instructor ID
     payload.append("scheduleTime", scheduleTime);
 
     try {
-      const token = localStorage.getItem("token"); // Assuming you store JWT in localStorage
+      const token = localStorage.getItem("token"); // Assuming token is stored here
       const response = await fetch(
         `${API_BASE_URL}/api/quiz/assignments/create`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Authorization header
           },
-          body: payload,
+          body: payload, // Send the FormData payload
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to create assignment");
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create assignment");
       }
 
-      router.push("/instructor/dashboard");
+      setSuccess("Assignment created successfully!");
+      setTimeout(() => {
+        router.push("/instructor/dashboard");
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -205,6 +217,8 @@ export default function InstructorQuizPage() {
             Create {type === "quiz" ? "Quiz" : "Assignment"}
           </h1>
           {error && <p className="text-red-500">{error}</p>}
+          {success && <p className="text-green-500">{success}</p>}{" "}
+          {/* Success message */}
           <form
             onSubmit={
               type === "quiz" ? handleQuizSubmit : handleAssignmentSubmit

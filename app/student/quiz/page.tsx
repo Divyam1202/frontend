@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/app/providers/theme-providers";
+import { API_BASE_URL } from "@/app/config/api";
 
-export default function InstructorQuizPage() {
+export default function StudentQuizPage() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [type, setType] = useState<"quiz" | "assignment" | "">(""); // "" for initial step
@@ -31,13 +32,16 @@ export default function InstructorQuizPage() {
   const fetchQuizzes = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/quizzes");
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_BASE_URL}/api/quiz/student/quizzes`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch quizzes");
       }
       const data = await response.json();
-      setQuizzes(data);
-      setQuizCount(data.length); // Update quiz count
+      setQuizzes(data.quizzes);
+      setQuizCount(data.quizzes.length); // Update quiz count
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -48,13 +52,19 @@ export default function InstructorQuizPage() {
   const fetchAssignments = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/assignments");
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${API_BASE_URL}/api/quiz/student/assignments`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch assignments");
       }
       const data = await response.json();
-      setAssignments(data);
-      setAssignmentCount(data.length); // Update assignment count
+      setAssignments(data.assignments);
+      setAssignmentCount(data.assignments.length); // Update assignment count
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -73,20 +83,22 @@ export default function InstructorQuizPage() {
   const handleStartQuiz = () => {
     if (selectedQuiz) {
       // Redirect to the quiz page or show options to start
-      router.push(`/quiz/${selectedQuiz.id}`);
+      router.push(`/quiz/${selectedQuiz._id}`);
     }
   };
 
   const handleSubmitAssignment = () => {
     if (selectedAssignment) {
       // Redirect to the assignment submission page or show submission form
-      router.push(`/assignment/submit/${selectedAssignment.id}`);
+      router.push(`/assignment/submit/${selectedAssignment._id}`);
     }
   };
+
   const logout = () => {
     // Implement logout functionality here
     console.log("Logged out");
   };
+
   const handleBackToDashboard = () => {
     router.push("/student/dashboard");
   };
@@ -117,7 +129,7 @@ export default function InstructorQuizPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <nav className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Instructor Portal</h1>
+          <h1 className="text-2xl font-bold">Student Portal</h1>
           <div className="flex items-center gap-4">
             <button
               onClick={toggleTheme}
@@ -158,7 +170,7 @@ export default function InstructorQuizPage() {
             <div>
               {quizzes.map((quiz) => (
                 <div
-                  key={quiz.id}
+                  key={quiz._id}
                   className="cursor-pointer mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg"
                   onClick={() => handleQuizClick(quiz)}
                 >
@@ -185,7 +197,7 @@ export default function InstructorQuizPage() {
             <div>
               {assignments.map((assignment) => (
                 <div
-                  key={assignment.id}
+                  key={assignment._id}
                   className="cursor-pointer mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg"
                   onClick={() => handleAssignmentClick(assignment)}
                 >
