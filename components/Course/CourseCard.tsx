@@ -20,7 +20,7 @@ interface CourseCardProps {
   enrolled: number;
   image: string;
   price: number;
-  isEnrolled: boolean; // Add this prop to determine if the course is enrolled
+  isEnrolled?: boolean; // Mark as optional
 }
 
 export default function CourseCard({
