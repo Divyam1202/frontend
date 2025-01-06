@@ -54,7 +54,7 @@ const EnrolledCoursesPage = () => {
         }
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/courses/mycourses`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/courses/courses`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
