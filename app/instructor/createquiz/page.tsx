@@ -68,7 +68,7 @@ export default function InstructorQuizPage() {
     }
   };
 
-  const handleQuizSubmit = async (e: React.FormEvent) => {
+  const handleQuizCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -107,32 +107,30 @@ export default function InstructorQuizPage() {
     }
   };
 
-  const handleAssignmentSubmit = async (e: React.FormEvent) => {
+  const handleAssignmentCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setSuccess("");
+    setSuccess(""); // Reset success message before new submission
 
-    const payload = new FormData();
-    payload.append("title", title);
-    payload.append("description", description); // No need for JSON.stringify
-    payload.append("dueDate", dueDate);
-    if (file) {
-      payload.append("file", file);
-    }
-    payload.append("instructor", "instructor_id"); // Replace with actual instructor ID
-    payload.append("scheduleTime", scheduleTime);
+    const payload = {
+      title,
+      description: JSON.stringify(description),
+      dueDate,
+      scheduleTime,
+    };
 
     try {
-      const token = localStorage.getItem("token"); // Assuming token is stored here
+      const token = localStorage.getItem("token"); // Assuming you store JWT in localStorage
       const response = await fetch(
         `${API_BASE_URL}/api/quiz/assignments/create`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // Authorization header
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-          body: payload, // Send the FormData payload
+          body: JSON.stringify(payload),
         }
       );
 
@@ -141,10 +139,11 @@ export default function InstructorQuizPage() {
         throw new Error(error.message || "Failed to create assignment");
       }
 
+      // Success: Set the success message and navigate
       setSuccess("Assignment created successfully!");
       setTimeout(() => {
         router.push("/instructor/dashboard");
-      }, 1500);
+      }, 1500); // Redirect after 1.5 seconds
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -221,7 +220,7 @@ export default function InstructorQuizPage() {
           {/* Success message */}
           <form
             onSubmit={
-              type === "quiz" ? handleQuizSubmit : handleAssignmentSubmit
+              type === "quiz" ? handleQuizCreate : handleAssignmentCreate
             }
           >
             <div className="mb-4">
