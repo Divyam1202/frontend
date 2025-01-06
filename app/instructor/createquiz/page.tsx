@@ -1,8 +1,8 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/app/providers/theme-providers";
+import { API_BASE_URL } from "@/app/config/api";
 
 export default function InstructorQuizPage() {
   const router = useRouter();
@@ -67,32 +67,69 @@ export default function InstructorQuizPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleQuizSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const payload = {
+      title,
+      questions: JSON.stringify(questions),
+      scheduleTime,
+    };
+
+    try {
+      const token = localStorage.getItem("token"); // Assuming you store JWT in localStorage
+      const response = await fetch(`${API_BASE_URL}/api/quiz/quizzes/create`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create quiz");
+      }
+
+      router.push("/instructor/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAssignmentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     const payload = new FormData();
     payload.append("title", title);
-    if (type === "quiz") {
-      payload.append("questions", JSON.stringify(questions));
-    } else {
-      payload.append("description", description);
-      payload.append("dueDate", dueDate);
-      if (file) {
-        payload.append("file", file);
-      }
+    payload.append("description", description);
+    payload.append("dueDate", dueDate);
+    if (file) {
+      payload.append("file", file);
     }
     payload.append("scheduleTime", scheduleTime);
 
     try {
-      const response = await fetch(`/api/quiz/${type}s/create`, {
-        method: "POST",
-        body: payload,
-      });
+      const token = localStorage.getItem("token"); // Assuming you store JWT in localStorage
+      const response = await fetch(
+        `${API_BASE_URL}/api/quiz/assignments/create`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: payload,
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to create quiz or assignment");
+        throw new Error("Failed to create assignment");
       }
 
       router.push("/instructor/dashboard");
@@ -107,9 +144,11 @@ export default function InstructorQuizPage() {
     // Implement logout functionality here
     console.log("Logged out");
   };
+
   const handleBackToDashboard = () => {
     router.push("/instructor/dashboard");
   };
+
   if (!type) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900">
@@ -166,7 +205,11 @@ export default function InstructorQuizPage() {
             Create {type === "quiz" ? "Quiz" : "Assignment"}
           </h1>
           {error && <p className="text-red-500">{error}</p>}
-          <form onSubmit={handleSubmit}>
+          <form
+            onSubmit={
+              type === "quiz" ? handleQuizSubmit : handleAssignmentSubmit
+            }
+          >
             <div className="mb-4">
               <label className="block mb-2 text-gray-700 dark:text-gray-300">
                 Title
@@ -303,35 +346,7 @@ export default function InstructorQuizPage() {
                 </div>
               </>
             )}
-            <div className="mb-4">
-              <label className="block text-gray-700 dark:text-gray-300">
-                Schedule Time
-              </label>
-              <input
-                type="datetime-local"
-                value={scheduleTime}
-                onChange={(e) => setScheduleTime(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-                required
-              />
-            </div>
             <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setTitle("");
-                  setQuestions([
-                    { question: "", options: [""], answerType: "descriptive" },
-                  ]);
-                  setDescription("");
-                  setDueDate("");
-                  setScheduleTime("");
-                  setFile(null);
-                }}
-                className="px-4 py-2 bg-gray-400 text-white rounded-lg"
-              >
-                Clear Form
-              </button>
               <button
                 type="button"
                 onClick={() =>

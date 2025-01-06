@@ -29,8 +29,10 @@ export default function ForgotPassword() {
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to send reset link");
+        throw new Error(data.message || "Failed to send reset link");
       }
 
       setMessage({
@@ -41,7 +43,9 @@ export default function ForgotPassword() {
     } catch (error) {
       setMessage({
         type: "error",
-        text: "Error sending reset link. Please try again.",
+        text:
+          (error as Error).message ||
+          "Error sending reset link. Please try again.",
       });
     } finally {
       setIsLoading(false);
