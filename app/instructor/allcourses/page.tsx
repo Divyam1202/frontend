@@ -210,82 +210,96 @@ const TeacherCourses = () => {
                 key={course._id}
                 className="course-card p-4 bg-white dark:bg-gray-800 rounded-md shadow-lg hover:bg-purple-200 dark:hover:bg-purple-700 transition duration-300"
               >
+                {/* Basic Course Info */}
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {course.title}
                 </h3>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <strong>Description:</strong> {course.description}
-                </p>
                 <p className="text-gray-700 dark:text-gray-300">
                   <strong>Course Code:</strong> {course.courseCode}
                 </p>
                 <p className="text-gray-700 dark:text-gray-300">
                   <strong>Capacity:</strong> {course.capacity}
                 </p>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mt-4">
-                  Enrolled Students ({course.students.length}):
-                </h4>
-                {course.students.length > 0 ? (
-                  <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
-                    {course.students.map((student) => (
-                      <li key={student._id}>
-                        {student.name} ({student.email})
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-gray-700 dark:text-gray-300">
-                    No students enrolled yet.
-                  </p>
-                )}
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mt-4">
-                  Modules:
-                </h4>
-                {course.modules.length > 0 ? (
-                  <div className="modules-list space-y-4">
-                    {course.modules.map((module, index) => (
-                      <div
-                        key={index}
-                        className="module-card p-4 bg-gray-200 dark:bg-gray-700 rounded-md shadow-md hover:bg-purple-200 dark:hover:bg-purple-600 transition-colors duration-300"
-                      >
-                        <h5 className="font-medium text-gray-900 dark:text-white">
-                          {module.title}
-                        </h5>
-                        {module.resourceLink &&
-                        module.resourceLink.includes("youtube.com") ? (
-                          <div className="video-container mt-2">
-                            <iframe
-                              width="100%"
-                              height="315"
-                              src={module.resourceLink.replace(
-                                "watch?v=",
-                                "embed/"
-                              )}
-                              title={`YouTube video for ${module.title}`}
-                              frameBorder="0"
-                              allowFullScreen
-                            ></iframe>
-                          </div>
-                        ) : (
-                          <p className="text-gray-700 dark:text-gray-300">
-                            No video available for this module.
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-700 dark:text-gray-300">
-                    No modules available.
-                  </p>
-                )}
 
+                {/* Toggle View More */}
                 <button
-                  className="edit-button bg-blue-500 text-white p-2 rounded-md mt-4"
-                  onClick={() => handleEditClick(course)}
+                  onClick={() => handleEditClick(course)} // Handles expansion
+                  className="view-more-button bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
                 >
-                  Edit
+                  View More
                 </button>
+
+                {/* Expanded View */}
+                {selectedCourse && selectedCourse._id === course._id && (
+                  <div className="expanded-course-details mt-4 p-4 bg-gray-200 dark:bg-gray-700 rounded-md">
+                    {/* Enrolled Students */}
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Enrolled Students ({course.students.length}):
+                    </h4>
+                    {course.students.length > 0 ? (
+                      <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
+                        {course.students.map((student) => (
+                          <li key={student._id}>
+                            {student.name} ({student.email})
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-700 dark:text-gray-300">
+                        No students enrolled yet.
+                      </p>
+                    )}
+
+                    {/* Modules */}
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mt-4">
+                      Modules:
+                    </h4>
+                    {course.modules.length > 0 ? (
+                      <div className="modules-list space-y-4">
+                        {course.modules.map((module, index) => (
+                          <div
+                            key={index}
+                            className="module-card p-4 bg-gray-200 dark:bg-gray-700 rounded-md shadow-md hover:bg-purple-200 dark:hover:bg-purple-600 transition-colors duration-300"
+                          >
+                            <h5 className="font-medium text-gray-900 dark:text-white">
+                              {module.title}
+                            </h5>
+                            {module.resourceLink &&
+                            module.resourceLink.includes("youtube.com") ? (
+                              <iframe
+                                width="100%"
+                                height="315"
+                                src={module.resourceLink.replace(
+                                  "watch?v=",
+                                  "embed/"
+                                )}
+                                title={`YouTube video for ${module.title}`}
+                                frameBorder="0"
+                                allowFullScreen
+                              ></iframe>
+                            ) : (
+                              <p className="text-gray-700 dark:text-gray-300">
+                                No video available for this module.
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-700 dark:text-gray-300">
+                        No modules available.
+                      </p>
+                    )}
+
+                    {/* Edit Button */}
+                    <button
+                      className="edit-button bg-blue-500 text-white p-2 rounded-md mt-4"
+                      onClick={() => handleEditClick(course)}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
