@@ -39,6 +39,8 @@ const TeacherCourses = () => {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
+
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
@@ -146,6 +148,10 @@ const TeacherCourses = () => {
   const handleRemoveModule = (index: number) => {
     const updatedModules = modules.filter((_, i) => i !== index);
     setModules(updatedModules);
+  };
+
+  const toggleExpandedCourse = (courseId: string) => {
+    setExpandedCourseId((prev) => (prev === courseId ? null : courseId));
   };
 
   if (loading) {
